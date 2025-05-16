@@ -7,7 +7,7 @@ Aplicación móvil desarrollada en Android Studio para la gestión de vehículos
 - Registro de conductores con nombre y teléfono.
 - Registro de autos con placa, marca, modelo y relación con un conductor.
 - Visualización de listas de conductores y vehículos registrados.
-- Almacenamiento de datos local utilizando SQLite sin bibliotecas ORM (sin Room).
+- Almacenamiento de datos local utilizando SQLite.
 
 ## 🛠 Herramientas y Tecnologías Utilizadas
 
