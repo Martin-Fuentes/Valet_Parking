@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Valet_Parking</string>
+    <string-array name="str_spTipo">
+        <item>Elige una opción...</item>
+        <item>Sedán</item>
+        <item>Pickup</item>
+        <item>HatchBack</item>
+        <item>Coupé</item>
+        <item>Convertible</item>
+        <item>SUV</item>
+        <item>Crossover</item>
+        <item>Minivan/Van</item>
+        <item>Motocicleta</item>
+    </string-array>
+</resources>
