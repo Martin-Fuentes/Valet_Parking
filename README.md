@@ -41,10 +41,8 @@ Aplicación móvil desarrollada en Android Studio para la gestión de vehículos
 
 ## 🔧 Próximas Funcionalidades
 
-- Registro de hora de entrada y salida de vehículos.
-- Filtro de búsqueda por placa o conductor.
-- Generación de reportes o historial de autos atendidos.
-- Notificaciones al usuario sobre registros exitosos.
+- Validación de datos erroneos
+- Mejora en la interfaz gráfica
 
 ## 📌 Requisitos
 
