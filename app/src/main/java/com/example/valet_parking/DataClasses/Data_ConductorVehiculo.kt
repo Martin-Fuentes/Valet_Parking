@@ -7,5 +7,6 @@ data class Data_ConductorVehiculo(
     val marcaVehiculo: String,
     val modeloVehiculo: String,
     val colorVehiculo:String,
-    val tipoVehiculo:String
+    val tipoVehiculo:String,
+    val hora_entrada:String
 )

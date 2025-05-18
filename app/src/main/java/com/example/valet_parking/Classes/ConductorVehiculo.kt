@@ -12,7 +12,7 @@ class ConductorVehiculo(private val dbHelper: DatabaseHelper) {
     suspend fun obtenerConductorVehiculo(): List<Data_ConductorVehiculo> = withContext(Dispatchers.IO){
         val lista = mutableListOf<Data_ConductorVehiculo>()
         val db = dbHelper.openDatabase()
-        val query = "SELECT c.cedula, c.nombre, c.contacto, v.placa, v.marca, v.modelo, v.color, v.tipo, p.hora_entrada, p.hora_salida, p.costo_pagar FROM parking p INNER JOIN conductor c ON p.cedula = c.cedula INNER JOIN vehiculo v ON p.placa = v.placa"
+        val query = "SELECT c.cedula, c.nombre, c.contacto, v.placa, v.marca, v.modelo, v.color, v.tipo, p.hora_entrada, p.hora_salida, p.costo_pagar FROM parking p INNER JOIN conductor c ON p.cedula = c.cedula INNER JOIN vehiculo v ON p.placa = v.placa WHERE p.hora_salida IS NULL"
         val cursor = db.rawQuery(query, null)
         if(cursor.moveToFirst()){
             do{
@@ -24,6 +24,7 @@ class ConductorVehiculo(private val dbHelper: DatabaseHelper) {
                     modeloVehiculo = cursor.getString(cursor.getColumnIndexOrThrow("modelo")),
                     colorVehiculo = cursor.getString(cursor.getColumnIndexOrThrow("color")),
                     tipoVehiculo = cursor.getString(cursor.getColumnIndexOrThrow("tipo")),
+                    hora_entrada = cursor.getString(cursor.getColumnIndexOrThrow("hora_entrada"))
                 )
                 lista.add(item)
             }while(cursor.moveToNext())
@@ -84,5 +85,70 @@ class ConductorVehiculo(private val dbHelper: DatabaseHelper) {
         db.close()
 
         return@withContext resultado != -1L
+    }
+    suspend fun registrarSalidaPorPlaca(placa: String): Boolean = withContext(Dispatchers.IO) {
+        val db = dbHelper.openDatabase()
+
+        val query = "SELECT id, hora_entrada FROM parking WHERE placa = ? AND hora_salida IS NULL ORDER BY hora_entrada DESC LIMIT 1"
+
+        val cursor = db.rawQuery(query, arrayOf(placa))
+        if (!cursor.moveToFirst()) {
+            cursor.close()
+            db.close()
+            return@withContext false
+        }
+
+        val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+        val horaEntradaStr = cursor.getString(cursor.getColumnIndexOrThrow("hora_entrada"))
+        cursor.close()
+
+        val formato = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val horaEntrada: Date = formato.parse(horaEntradaStr) ?: return@withContext false
+        val horaSalida = Date()
+
+        val diferenciaMs = horaSalida.time - horaEntrada.time
+        val minutos = diferenciaMs / (1000 * 60)
+        val tarifa = minutos / 60.0
+
+        val values = ContentValues().apply {
+            put("hora_salida", formato.format(horaSalida))
+            put("costo_pagar", String.format(Locale.US, "%.2f", tarifa))
+        }
+
+        val filasActualizadas = db.update("parking", values, "id = ?", arrayOf(id.toString()))
+        db.close()
+        return@withContext filasActualizadas > 0
+    }
+    suspend fun obtenerDuracionYSaldoPorPlaca(placa: String): Array<Any>? = withContext(Dispatchers.IO) {
+        val db = dbHelper.openDatabase()
+
+        val query = "SELECT hora_entrada, hora_salida, costo_pagar FROM parking WHERE placa = ? AND hora_salida IS NOT NULL ORDER BY hora_salida DESC LIMIT 1"
+        val cursor = db.rawQuery(query, arrayOf(placa))
+
+        if (!cursor.moveToFirst()) {
+            cursor.close()
+            db.close()
+            return@withContext null
+        }
+
+        val horaEntradaStr = cursor.getString(cursor.getColumnIndexOrThrow("hora_entrada"))
+        val horaSalidaStr = cursor.getString(cursor.getColumnIndexOrThrow("hora_salida"))
+        val costo = cursor.getString(cursor.getColumnIndexOrThrow("costo_pagar")).toDoubleOrNull() ?: 0.0
+
+        cursor.close()
+        db.close()
+
+        val formato = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val horaEntrada = formato.parse(horaEntradaStr)
+        val horaSalida = formato.parse(horaSalidaStr)
+
+        if (horaEntrada == null || horaSalida == null) return@withContext null
+
+        val diferenciaMs = horaSalida.time - horaEntrada.time
+        val totalMinutos = diferenciaMs / (1000 * 60)
+        val horas = (totalMinutos / 60).toInt()
+        val minutos = (totalMinutos % 60).toInt()
+
+        return@withContext arrayOf(horas, minutos, costo)
     }
 }

@@ -1,6 +1,7 @@
 package com.example.valet_parking.Classes
 
 import android.content.Context
+import android.icu.text.SimpleDateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,7 @@ import android.widget.Filterable
 import android.widget.TextView
 import com.example.valet_parking.DataClasses.Data_ConductorVehiculo
 import com.example.valet_parking.R
+import java.util.Locale
 
 class Adaptador_Listview(private val context: Context, private var originalList: List<Data_ConductorVehiculo>) : BaseAdapter(),
     Filterable {
@@ -28,6 +30,11 @@ class Adaptador_Listview(private val context: Context, private var originalList:
 
         view.findViewById<TextView>(R.id.txtConductor).text = "${item.nombreConductor} | ${item.cedulaConductor}"
         view.findViewById<TextView>(R.id.txtVehiculo).text = "${item.placaVehiculo} | ${item.marcaVehiculo} | ${item.modeloVehiculo} | ${item.colorVehiculo} | ${item.tipoVehiculo}"
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val date = inputFormat.parse(item.hora_entrada)
+        val soloFecha = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date)
+        val hora12 = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(date)
+        view.findViewById<TextView>(R.id.txtHoraEntrada).text = "${soloFecha} | ${hora12}"
 
         return view
     }
@@ -40,7 +47,7 @@ class Adaptador_Listview(private val context: Context, private var originalList:
                     originalList
                 } else {
                     originalList.filter {
-                        it.nombreConductor.lowercase().contains(query) || it.placaVehiculo.lowercase().contains(query)
+                        it.nombreConductor.lowercase().contains(query) || it.placaVehiculo.lowercase().contains(query) || it.cedulaConductor.lowercase().contains(query)
                     }
                 }
 
