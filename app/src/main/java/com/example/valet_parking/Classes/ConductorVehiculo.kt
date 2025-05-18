@@ -46,22 +46,54 @@ class ConductorVehiculo(private val dbHelper: DatabaseHelper) {
         db.close()
         return@withContext existe
     }
-    suspend fun existeConductorVehiculoRegistrados(cedula: String, placa: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun existeConductorVehiculoRegistrados(cedula: String, placa: String): Array<String>? = withContext(Dispatchers.IO) {
         val db = dbHelper.openDatabase()
         val cursorConductor = db.rawQuery(
-            "SELECT 1 FROM conductor WHERE cedula = ? LIMIT 1",
+            "SELECT nombre, cedula FROM conductor WHERE cedula = ? LIMIT 1",
             arrayOf(cedula)
         )
-        val existeConductor = cursorConductor.moveToFirst()
+
+        if (!cursorConductor.moveToFirst()) {
+            cursorConductor.close()
+            db.close()
+            return@withContext null
+        }
+
+        val nombreConductor = cursorConductor.getString(cursorConductor.getColumnIndexOrThrow("nombre"))
+        val cedulaConductor = cursorConductor.getString(cursorConductor.getColumnIndexOrThrow("cedula"))
         cursorConductor.close()
+
+
         val cursorVehiculo = db.rawQuery(
-            "SELECT 1 FROM vehiculo WHERE placa = ? LIMIT 1",
+            "SELECT placa, marca, modelo, color, tipo FROM vehiculo WHERE placa = ? LIMIT 1",
             arrayOf(placa)
         )
-        val existeVehiculo = cursorVehiculo.moveToFirst()
+
+        if (!cursorVehiculo.moveToFirst()) {
+            cursorVehiculo.close()
+            db.close()
+            return@withContext null
+        }
+
+        val placaVehiculo = cursorVehiculo.getString(cursorVehiculo.getColumnIndexOrThrow("placa"))
+        val marcaVehiculo = cursorVehiculo.getString(cursorVehiculo.getColumnIndexOrThrow("marca"))
+        val modeloVehiculo = cursorVehiculo.getString(cursorVehiculo.getColumnIndexOrThrow("modelo"))
+        val colorVehiculo = cursorVehiculo.getString(cursorVehiculo.getColumnIndexOrThrow("color"))
+        val tipoVehiculo = cursorVehiculo.getString(cursorVehiculo.getColumnIndexOrThrow("tipo"))
         cursorVehiculo.close()
+
         db.close()
-        return@withContext existeConductor && existeVehiculo
+
+
+        return@withContext arrayOf(
+            nombreConductor,
+            cedulaConductor,
+            placaVehiculo,
+            marcaVehiculo,
+            modeloVehiculo,
+            colorVehiculo,
+            tipoVehiculo
+        )
     }
     suspend fun insertarParkingEntrada(cedula: String, placa: String): Boolean = withContext(Dispatchers.IO) {
         val db = dbHelper.openDatabase()

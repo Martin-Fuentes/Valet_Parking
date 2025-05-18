@@ -1,6 +1,8 @@
 package com.example.valet_parking
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -15,8 +17,21 @@ class SaldoPagar : AppCompatActivity() {
         setContentView(R.layout.activity_saldo_pagar)
         val txtTiempo = findViewById<TextView>(R.id.txtTiempo)
         val txtSaldo = findViewById<TextView>(R.id.txtSaldoPagar)
+        val btnRegresar = findViewById<Button>(R.id.btnAtras)
+        val btnMenu = findViewById<Button>(R.id.btnMenu)
+        btnRegresar.setOnClickListener {
+            val intent = Intent(this@SaldoPagar, MarcarSalida::class.java)
+            startActivity(intent)
+            finish()
+        }
+        btnMenu.setOnClickListener {
+            val intent = Intent(this@SaldoPagar, ActivityMenu::class.java)
+            startActivity(intent)
+            finish()
+        }
         val dbHelper = DatabaseHelper(this)
         dbHelper.copyDB()
+
         lifecycleScope.launch {
             val conductorVehiculo = ConductorVehiculo(dbHelper)
             val resultado = conductorVehiculo.obtenerDuracionYSaldoPorPlaca(intent.getStringExtra("Placa").toString())

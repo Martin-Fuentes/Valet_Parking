@@ -3,8 +3,8 @@ package com.example.valet_parking
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ListView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.addTextChangedListener
@@ -26,7 +26,7 @@ class MarcarSalida : AppCompatActivity() {
         dbHelper.copyDB()
 
         val listView = findViewById<ListView>(R.id.listView)
-        val searchInput = findViewById<TextView>(R.id.txtCedulaConductor)
+        val searchInput = findViewById<EditText>(R.id.txtCedulaConductor)
 
         lifecycleScope.launch {
 
@@ -35,15 +35,21 @@ class MarcarSalida : AppCompatActivity() {
 
             adapter = Adaptador_Listview(this@MarcarSalida, datos)
             listView.adapter = adapter
+            var ignorarCambio = false
             listView.setOnItemClickListener { _, _, position, _ ->
                 val item = adapter.getItem(position)
                 adapter.mostrarSolo(item)
                 itemSeleccionado = item
-                searchInput.text = item.cedulaConductor.toString()
+                ignorarCambio = true
+                searchInput.setText(item.cedulaConductor.toString())
+                searchInput.setSelection(searchInput.text.length)
+                ignorarCambio = false
             }
 
             searchInput.addTextChangedListener {
-                adapter.filter.filter(it.toString())
+                if (!ignorarCambio) {
+                    adapter.filter.filter(it.toString())
+                }
             }
         }
         val btnMarcarSalida = findViewById<Button>(R.id.btnMarcarSalida)
@@ -60,6 +66,7 @@ class MarcarSalida : AppCompatActivity() {
                         val intent = Intent(this@MarcarSalida, SaldoPagar::class.java)
                         intent.putExtra("Placa", item.placaVehiculo.toString())
                         startActivity(intent)
+                        finish()
                     } else {
                         Toast.makeText(this@MarcarSalida, "No se pudo registrar la salida", Toast.LENGTH_SHORT).show()
                     }

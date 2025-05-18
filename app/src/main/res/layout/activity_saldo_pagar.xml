@@ -17,7 +17,7 @@
         <Button
             android:id="@+id/btnAtras"
             android:layout_width="150dp"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:layout_marginStart="40dp"
             android:layout_marginTop="28dp"
             android:text="Regresar"
@@ -27,7 +27,7 @@
         <Button
             android:id="@+id/btnMenu"
             android:layout_width="150dp"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:layout_marginTop="28dp"
             android:layout_marginEnd="40dp"
             android:text="Menú Principal"
